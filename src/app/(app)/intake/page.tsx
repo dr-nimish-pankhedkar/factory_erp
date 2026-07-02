@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Factory } from "lucide-react";
+import { Plus, Factory, Package } from "lucide-react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/current-profile";
@@ -12,7 +12,7 @@ export default async function IntakePage() {
 
   const supabase = await createClient();
   const [{ data: stock }, { data: intakes }] = await Promise.all([
-    supabase.from("material_stock").select("*"),
+    supabase.from("material_stock").select("*").eq("category", "raw_material"),
     supabase
       .from("material_intake")
       .select("id, material_id, quantity, unit, source_vendor, entered_by, received_at")
@@ -45,8 +45,14 @@ export default async function IntakePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-neutral-800">Materials</h1>
+        <h1 className="text-lg font-semibold text-neutral-800">Raw Materials</h1>
         <div className="flex items-center gap-2">
+          <Link
+            href="/consumables"
+            className="flex h-11 items-center gap-1.5 rounded-full bg-neutral-100 px-3 text-sm font-medium text-neutral-700 active:scale-95"
+          >
+            <Package className="h-4 w-4" /> Consumables
+          </Link>
           <Link
             href="/intake/process"
             className="flex h-11 items-center gap-1.5 rounded-full bg-neutral-100 px-3 text-sm font-medium text-neutral-700 active:scale-95"

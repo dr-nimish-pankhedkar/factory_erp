@@ -9,7 +9,12 @@ export default async function ProcessingLogPage() {
   if (profile.role === "staff") redirect("/");
 
   const supabase = await createClient();
-  const { data: materials } = await supabase.from("materials").select("id, name, default_unit").order("name");
+  const { data: materials } = await supabase
+    .from("materials")
+    .select("id, name, default_unit")
+    .eq("category", "raw_material")
+    .eq("is_active", true)
+    .order("name");
 
   return (
     <div className="flex flex-col gap-4">

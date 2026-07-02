@@ -7,6 +7,8 @@ export type TaskStatus = "not_started" | "in_progress" | "done";
 export type TaskEventType = "voice_note" | "status_change" | "photo" | "text_note";
 export type RequestCategory = "machine_issue" | "material_shortage" | "safety" | "other";
 export type RequestStatus = "open" | "acknowledged" | "resolved";
+export type MaterialCategory = "raw_material" | "consumable" | "machine_part";
+export type StockDirection = "in" | "out";
 
 export interface Database {
   public: {
@@ -41,10 +43,43 @@ export interface Database {
           id: string;
           name: string;
           default_unit: string;
+          category: MaterialCategory;
+          is_active: boolean;
+          created_by: string | null;
           created_at: string;
         };
-        Insert: { id?: string; name: string; default_unit: string };
+        Insert: {
+          id?: string;
+          name: string;
+          default_unit: string;
+          category?: MaterialCategory;
+          is_active?: boolean;
+          created_by?: string | null;
+        };
         Update: Partial<Database["public"]["Tables"]["materials"]["Insert"]>;
+        Relationships: [];
+      };
+      consumable_stock_movements: {
+        Row: {
+          id: string;
+          material_id: string;
+          direction: StockDirection;
+          quantity: number;
+          reason: string | null;
+          recorded_by: string;
+          recorded_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          material_id: string;
+          direction: StockDirection;
+          quantity: number;
+          reason?: string | null;
+          recorded_by: string;
+          recorded_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["consumable_stock_movements"]["Insert"]>;
         Relationships: [];
       };
       tasks: {
@@ -238,6 +273,7 @@ export interface Database {
           material_id: string;
           name: string;
           default_unit: string;
+          category: MaterialCategory;
           current_stock: number;
         };
         Relationships: [];

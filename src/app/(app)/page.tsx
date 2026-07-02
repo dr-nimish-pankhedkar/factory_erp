@@ -1,4 +1,4 @@
-import { ClipboardList, MessageCircleWarning, Truck, Wheat, BarChart3, UserPlus } from "lucide-react";
+import { ClipboardList, MessageCircleWarning, Truck, Wheat, BarChart3, UserPlus, Package, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/current-profile";
 import { IconTile } from "@/components/layout/IconTile";
@@ -42,13 +42,14 @@ export default async function HomePage() {
           <IconTile href="/requests" icon={MessageCircleWarning} label="Requests" badge={openRequestCount ?? 0} color="amber" />
           <IconTile href="/gate-passes/new" icon={Truck} label="Gate Pass" color="purple" />
           <IconTile href="/intake/new" icon={Wheat} label="Record Intake" color="green" />
+          <IconTile href="/consumables" icon={Package} label="Consumables" color="blue" />
         </div>
       </div>
     );
   }
 
   // Admin
-  const { data: stock } = await supabase.from("material_stock").select("*");
+  const { data: stock } = await supabase.from("material_stock").select("*").eq("category", "raw_material");
   const { data: recentPasses } = await supabase
     .from("gate_passes")
     .select("id, item_description, quantity, unit, created_at")
@@ -65,7 +66,9 @@ export default async function HomePage() {
         <IconTile href="/gate-passes/new" icon={Truck} label="Gate Pass" color="purple" />
         <IconTile href="/intake/new" icon={Wheat} label="Record Intake" color="green" />
         <IconTile href="/intake" icon={BarChart3} label="Stock" color="blue" />
+        <IconTile href="/consumables" icon={Package} label="Consumables" color="blue" />
         <IconTile href="/accounts" icon={UserPlus} label="Accounts" color="purple" />
+        <IconTile href="/items" icon={Settings} label="Items" color="amber" />
       </div>
 
       <section className="flex flex-col gap-2">
