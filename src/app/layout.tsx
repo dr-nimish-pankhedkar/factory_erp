@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -15,6 +15,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Magic Millets",
   description: "Magic Millets factory operations app",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Magic Millets",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#7d1f43",
 };
 
 export default function RootLayout({
