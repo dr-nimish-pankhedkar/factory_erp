@@ -4,7 +4,7 @@
 
 export type UserRole = "admin" | "manager" | "staff";
 export type TaskStatus = "not_started" | "in_progress" | "done";
-export type TaskEventType = "voice_note" | "status_change" | "photo";
+export type TaskEventType = "voice_note" | "status_change" | "photo" | "text_note";
 export type RequestCategory = "machine_issue" | "material_shortage" | "safety" | "other";
 export type RequestStatus = "open" | "acknowledged" | "resolved";
 
@@ -95,6 +95,7 @@ export interface Database {
           event_type: TaskEventType;
           audio_url: string | null;
           photo_url: string | null;
+          content: string | null;
           status_from: TaskStatus | null;
           status_to: TaskStatus | null;
           created_at: string;
@@ -106,6 +107,7 @@ export interface Database {
           event_type: TaskEventType;
           audio_url?: string | null;
           photo_url?: string | null;
+          content?: string | null;
           status_from?: TaskStatus | null;
           status_to?: TaskStatus | null;
         };

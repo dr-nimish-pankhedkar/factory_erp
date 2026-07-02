@@ -31,7 +31,7 @@ export default async function TaskDetailPage({
 
   const { data: events } = await supabase
     .from("task_events")
-    .select("id, event_type, audio_url, status_from, status_to, author_id, created_at")
+    .select("id, event_type, audio_url, content, status_from, status_to, author_id, created_at")
     .eq("task_assignee_id", taskAssigneeId)
     .order("created_at", { ascending: true });
 
@@ -47,6 +47,7 @@ export default async function TaskDetailPage({
         id: e.id,
         event_type: e.event_type,
         audioUrl: e.audio_url ? await signedMediaUrl(supabase, e.audio_url) : null,
+        content: e.content,
         statusFrom: e.status_from,
         statusTo: e.status_to,
         createdAt: e.created_at,

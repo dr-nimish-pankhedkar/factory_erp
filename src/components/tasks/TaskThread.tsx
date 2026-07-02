@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { uploadMedia } from "@/lib/storage";
 import { extensionForMimeType } from "@/lib/audio/mime";
@@ -14,6 +15,7 @@ export interface ThreadEvent {
   id: string;
   event_type: string;
   audioUrl: string | null;
+  content: string | null;
   statusFrom: TaskStatus | null;
   statusTo: TaskStatus | null;
   createdAt: string;
@@ -97,6 +99,23 @@ export function TaskThread({
               <p className="self-center rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-500">
                 {event.authorName} marked {event.statusTo?.replace("_", " ")}
               </p>
+            ) : event.event_type === "text_note" && event.content ? (
+              <div className="flex flex-col gap-1 rounded-2xl bg-white p-3 shadow-sm">
+                <div className="flex items-center gap-2">
+                  {event.authorPhotoUrl && (
+                    <Image
+                      src={event.authorPhotoUrl}
+                      alt={event.authorName}
+                      width={20}
+                      height={20}
+                      className="h-5 w-5 rounded-full object-cover"
+                    />
+                  )}
+                  <span className="text-sm font-medium text-neutral-700">{event.authorName}</span>
+                  <span className="text-xs text-neutral-400">{new Date(event.createdAt).toLocaleString()}</span>
+                </div>
+                <p className="text-base text-neutral-800">{event.content}</p>
+              </div>
             ) : event.audioUrl ? (
               <VoiceMessagePlayer
                 src={event.audioUrl}
