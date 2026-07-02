@@ -12,7 +12,9 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
   return (
     <div className="min-h-screen bg-neutral-50 pb-20">
       <header className="flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <Image src="/logo-icon.png" alt="Magic Millets" width={32} height={32} className="h-8 w-auto" />
+          <div className="h-8 w-px bg-neutral-200" />
           {profile.photo_url ? (
             <Image
               src={profile.photo_url}

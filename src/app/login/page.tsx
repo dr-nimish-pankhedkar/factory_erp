@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { User, KeyRound, Wheat } from "lucide-react";
+import Image from "next/image";
+import { User, KeyRound } from "lucide-react";
 import { signInWithPin, type SignInState } from "@/lib/actions/auth";
 
 const initialState: SignInState = {};
@@ -11,11 +12,8 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-neutral-50 px-6">
-      <div className="mb-8 flex flex-col items-center gap-2">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
-          <Wheat className="h-8 w-8 text-amber-700" />
-        </div>
-        <h1 className="text-xl font-semibold text-neutral-800">Mill App</h1>
+      <div className="mb-6 flex flex-col items-center">
+        <Image src="/logo-full.png" alt="Magic Millets" width={310} height={406} priority className="w-40 h-auto" />
       </div>
 
       <form action={formAction} className="flex w-full max-w-sm flex-col gap-4">
