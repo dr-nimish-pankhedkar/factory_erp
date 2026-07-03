@@ -241,31 +241,6 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["material_intake"]["Insert"]>;
         Relationships: [];
       };
-      processing_log: {
-        Row: {
-          id: string;
-          input_material_id: string;
-          input_quantity: number;
-          output_material_id: string;
-          output_quantity: number;
-          processed_by: string;
-          processed_at: string;
-          notes: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          input_material_id: string;
-          input_quantity: number;
-          output_material_id: string;
-          output_quantity: number;
-          processed_by: string;
-          processed_at?: string;
-          notes?: string | null;
-        };
-        Update: Partial<Database["public"]["Tables"]["processing_log"]["Insert"]>;
-        Relationships: [];
-      };
     };
     Views: {
       material_stock: {

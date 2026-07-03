@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Factory, Package } from "lucide-react";
+import { Plus, Package } from "lucide-react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/current-profile";
@@ -52,12 +52,6 @@ export default async function IntakePage() {
             className="flex h-11 items-center gap-1.5 rounded-full bg-neutral-100 px-3 text-sm font-medium text-neutral-700 active:scale-95"
           >
             <Package className="h-4 w-4" /> Consumables
-          </Link>
-          <Link
-            href="/intake/process"
-            className="flex h-11 items-center gap-1.5 rounded-full bg-neutral-100 px-3 text-sm font-medium text-neutral-700 active:scale-95"
-          >
-            <Factory className="h-4 w-4" /> Log processing
           </Link>
           <Link href="/intake/new" className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white active:scale-95">
             <Plus className="h-5 w-5" />
