@@ -2,16 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { uploadMedia } from "@/lib/storage";
 import { extensionForMimeType } from "@/lib/audio/mime";
-import { VoiceRecorder } from "@/components/voice/VoiceRecorder";
 import { VoiceMessagePlayer } from "@/components/voice/VoiceMessagePlayer";
+import { ReplyComposer } from "@/components/messaging/ReplyComposer";
 import type { RequestStatus } from "@/types/database";
 
 export interface RequestThreadEvent {
   id: string;
   audioUrl: string | null;
+  content: string | null;
   statusFrom: RequestStatus | null;
   statusTo: RequestStatus | null;
   createdAt: string;
@@ -94,6 +96,23 @@ export function RequestThread({
               authorPhotoUrl={event.authorPhotoUrl ?? undefined}
               timestamp={new Date(event.createdAt).toLocaleString()}
             />
+          ) : event.content ? (
+            <div key={event.id} className="flex flex-col gap-1 rounded-2xl bg-white p-3 shadow-sm">
+              <div className="flex items-center gap-2">
+                {event.authorPhotoUrl && (
+                  <Image
+                    src={event.authorPhotoUrl}
+                    alt={event.authorName}
+                    width={20}
+                    height={20}
+                    className="h-5 w-5 rounded-full object-cover"
+                  />
+                )}
+                <span className="text-sm font-medium text-neutral-700">{event.authorName}</span>
+                <span className="text-xs text-neutral-400">{new Date(event.createdAt).toLocaleString()}</span>
+              </div>
+              <p className="text-base text-neutral-800">{event.content}</p>
+            </div>
           ) : (
             <p key={event.id} className="self-center rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-500">
               {event.authorName} marked {event.statusTo}
@@ -103,9 +122,8 @@ export function RequestThread({
         {initialEvents.length === 0 && <p className="text-sm text-neutral-400">No messages yet.</p>}
       </div>
 
-      <VoiceRecorder
-        label="Reply with a voice note"
-        onUpload={async (audio) => {
+      <ReplyComposer
+        onSendVoice={async (audio) => {
           const supabase = createClient();
           const ext = extensionForMimeType(audio.mimeType);
           const path = `requests/${requestId}/${crypto.randomUUID()}.${ext}`;
@@ -115,6 +133,17 @@ export function RequestThread({
             request_id: requestId,
             author_id: currentUserId,
             audio_url: path,
+          });
+          if (error) throw new Error(error.message);
+
+          router.refresh();
+        }}
+        onSendText={async (text) => {
+          const supabase = createClient();
+          const { error } = await supabase.from("request_events").insert({
+            request_id: requestId,
+            author_id: currentUserId,
+            content: text,
           });
           if (error) throw new Error(error.message);
 

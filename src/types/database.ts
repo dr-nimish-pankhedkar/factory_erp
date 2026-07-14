@@ -174,6 +174,7 @@ export interface Database {
           request_id: string;
           author_id: string;
           audio_url: string | null;
+          content: string | null;
           status_from: RequestStatus | null;
           status_to: RequestStatus | null;
           created_at: string;
@@ -183,6 +184,7 @@ export interface Database {
           request_id: string;
           author_id: string;
           audio_url?: string | null;
+          content?: string | null;
           status_from?: RequestStatus | null;
           status_to?: RequestStatus | null;
         };

@@ -6,8 +6,8 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { uploadMedia } from "@/lib/storage";
 import { extensionForMimeType } from "@/lib/audio/mime";
-import { VoiceRecorder } from "@/components/voice/VoiceRecorder";
 import { VoiceMessagePlayer } from "@/components/voice/VoiceMessagePlayer";
+import { ReplyComposer } from "@/components/messaging/ReplyComposer";
 import { StatusIcon } from "./StatusIcon";
 import type { TaskStatus } from "@/types/database";
 
@@ -129,9 +129,8 @@ export function TaskThread({
         {initialEvents.length === 0 && <p className="text-sm text-neutral-400">No messages yet.</p>}
       </div>
 
-      <VoiceRecorder
-        label="Reply with a voice note"
-        onUpload={async (audio) => {
+      <ReplyComposer
+        onSendVoice={async (audio) => {
           const supabase = createClient();
           const {
             data: { user },
@@ -147,6 +146,23 @@ export function TaskThread({
             author_id: user.id,
             event_type: "voice_note",
             audio_url: path,
+          });
+          if (error) throw new Error(error.message);
+
+          router.refresh();
+        }}
+        onSendText={async (text) => {
+          const supabase = createClient();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          if (!user) throw new Error("Not signed in.");
+
+          const { error } = await supabase.from("task_events").insert({
+            task_assignee_id: taskAssigneeId,
+            author_id: user.id,
+            event_type: "text_note",
+            content: text,
           });
           if (error) throw new Error(error.message);
 

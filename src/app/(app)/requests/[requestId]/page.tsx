@@ -25,7 +25,7 @@ export default async function RequestDetailPage({
 
   const { data: events } = await supabase
     .from("request_events")
-    .select("id, audio_url, status_from, status_to, author_id, created_at")
+    .select("id, audio_url, content, status_from, status_to, author_id, created_at")
     .eq("request_id", requestId)
     .order("created_at", { ascending: true });
 
@@ -40,6 +40,7 @@ export default async function RequestDetailPage({
       return {
         id: e.id,
         audioUrl: e.audio_url ? await signedMediaUrl(supabase, e.audio_url) : null,
+        content: e.content,
         statusFrom: e.status_from,
         statusTo: e.status_to,
         createdAt: e.created_at,

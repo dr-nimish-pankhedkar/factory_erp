@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Mic, Keyboard } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadMedia } from "@/lib/storage";
 import { extensionForMimeType } from "@/lib/audio/mime";
@@ -17,16 +18,21 @@ interface ManagerOption {
   full_name: string;
 }
 
+type NoteMode = "voice" | "text";
+
 export function CreateRequestForm({ managers }: { managers: ManagerOption[] }) {
   const router = useRouter();
   const [category, setCategory] = useState<RequestCategory>("other");
   const [managerId, setManagerId] = useState<string>("");
+  const [noteMode, setNoteMode] = useState<NoteMode>("voice");
   const [audio, setAudio] = useState<RecordedAudio | null>(null);
+  const [textNote, setTextNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit() {
-    if (!audio) return setError("Record a voice note describing the issue.");
+    if (noteMode === "voice" && !audio) return setError("Record a voice note describing the issue.");
+    if (noteMode === "text" && !textNote.trim()) return setError("Type a description of the issue.");
 
     setSubmitting(true);
     setError(null);
@@ -45,16 +51,25 @@ export function CreateRequestForm({ managers }: { managers: ManagerOption[] }) {
         .single();
       if (requestError || !request) throw new Error(requestError?.message ?? "Could not send request.");
 
-      const ext = extensionForMimeType(audio.mimeType);
-      const path = `requests/${request.id}/${crypto.randomUUID()}.${ext}`;
-      await uploadMedia(supabase, path, audio.blob, audio.mimeType);
+      if (noteMode === "voice" && audio) {
+        const ext = extensionForMimeType(audio.mimeType);
+        const path = `requests/${request.id}/${crypto.randomUUID()}.${ext}`;
+        await uploadMedia(supabase, path, audio.blob, audio.mimeType);
 
-      const { error: eventError } = await supabase.from("request_events").insert({
-        request_id: request.id,
-        author_id: user.id,
-        audio_url: path,
-      });
-      if (eventError) throw new Error(eventError.message);
+        const { error: eventError } = await supabase.from("request_events").insert({
+          request_id: request.id,
+          author_id: user.id,
+          audio_url: path,
+        });
+        if (eventError) throw new Error(eventError.message);
+      } else {
+        const { error: eventError } = await supabase.from("request_events").insert({
+          request_id: request.id,
+          author_id: user.id,
+          content: textNote.trim(),
+        });
+        if (eventError) throw new Error(eventError.message);
+      }
 
       router.push("/requests");
       router.refresh();
@@ -102,8 +117,40 @@ export function CreateRequestForm({ managers }: { managers: ManagerOption[] }) {
       </label>
 
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-neutral-600">Voice note</span>
-        <VoiceCapture audio={audio} onChange={setAudio} />
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-neutral-600">Describe the issue</span>
+          <div className="flex rounded-full bg-neutral-100 p-1">
+            <button
+              type="button"
+              onClick={() => setNoteMode("voice")}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium ${
+                noteMode === "voice" ? "bg-white text-blue-600 shadow-sm" : "text-neutral-500"
+              }`}
+            >
+              <Mic className="h-4 w-4" /> Voice
+            </button>
+            <button
+              type="button"
+              onClick={() => setNoteMode("text")}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium ${
+                noteMode === "text" ? "bg-white text-blue-600 shadow-sm" : "text-neutral-500"
+              }`}
+            >
+              <Keyboard className="h-4 w-4" /> Type
+            </button>
+          </div>
+        </div>
+        {noteMode === "voice" ? (
+          <VoiceCapture audio={audio} onChange={setAudio} />
+        ) : (
+          <textarea
+            value={textNote}
+            onChange={(e) => setTextNote(e.target.value)}
+            rows={4}
+            placeholder="Describe the issue..."
+            className="rounded-2xl border border-neutral-300 px-4 py-3 text-base"
+          />
+        )}
       </div>
 
       {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
