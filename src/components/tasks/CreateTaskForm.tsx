@@ -3,11 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
-import { Camera, Mic, Keyboard } from "lucide-react";
+import { Mic, Keyboard } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadMedia } from "@/lib/storage";
 import { extensionForMimeType } from "@/lib/audio/mime";
 import { VoiceCapture } from "@/components/voice/VoiceCapture";
+import { CameraCapture } from "@/components/media/CameraCapture";
 import type { RecordedAudio } from "@/lib/audio/useVoiceRecorder";
 
 interface StaffOption {
@@ -25,7 +26,7 @@ export function CreateTaskForm({ staff }: { staff: StaffOption[] }) {
   const [noteMode, setNoteMode] = useState<NoteMode>("voice");
   const [audio, setAudio] = useState<RecordedAudio | null>(null);
   const [textNote, setTextNote] = useState("");
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photos, setPhotos] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,11 +56,15 @@ export function CreateTaskForm({ staff }: { staff: StaffOption[] }) {
         .single();
       if (taskError || !task) throw new Error(taskError?.message ?? "Could not create task.");
 
-      if (photoFile) {
-        const ext = photoFile.name.split(".").pop() ?? "jpg";
-        const path = `task-photos/${task.id}/${crypto.randomUUID()}.${ext}`;
-        await uploadMedia(supabase, path, photoFile, photoFile.type);
-        await supabase.from("tasks").update({ photo_url: path }).eq("id", task.id);
+      if (photos.length > 0) {
+        const paths = await Promise.all(
+          photos.map(async (photo) => {
+            const path = `task-photos/${task.id}/${crypto.randomUUID()}.jpg`;
+            await uploadMedia(supabase, path, photo, photo.type);
+            return path;
+          }),
+        );
+        await supabase.from("tasks").update({ photo_urls: paths }).eq("id", task.id);
       }
 
       for (const staffId of selectedStaff) {
@@ -142,20 +147,7 @@ export function CreateTaskForm({ staff }: { staff: StaffOption[] }) {
         />
       </label>
 
-      <label className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-neutral-600">Photo (optional)</span>
-        <label className="flex h-14 w-fit cursor-pointer items-center gap-2 rounded-2xl bg-neutral-100 px-4 text-sm font-medium text-neutral-700">
-          <Camera className="h-5 w-5" />
-          {photoFile ? photoFile.name : "Add photo"}
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
-          />
-        </label>
-      </label>
+      <CameraCapture label="Photo (optional, up to 3)" photos={photos} onChange={setPhotos} max={3} />
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">

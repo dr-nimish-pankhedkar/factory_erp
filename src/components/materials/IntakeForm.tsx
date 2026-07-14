@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Camera } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadMedia } from "@/lib/storage";
+import { CameraCapture } from "@/components/media/CameraCapture";
 
 interface MaterialOption {
   id: string;
@@ -18,7 +18,7 @@ export function IntakeForm({ materials }: { materials: MaterialOption[] }) {
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState(materials[0]?.default_unit ?? "");
   const [sourceVendor, setSourceVendor] = useState("");
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photos, setPhotos] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,11 +53,15 @@ export function IntakeForm({ materials }: { materials: MaterialOption[] }) {
         .single();
       if (insertError || !intake) throw new Error(insertError?.message ?? "Could not record intake.");
 
-      if (photoFile) {
-        const ext = photoFile.name.split(".").pop() ?? "jpg";
-        const path = `intake/${intake.id}/${crypto.randomUUID()}.${ext}`;
-        await uploadMedia(supabase, path, photoFile, photoFile.type);
-        await supabase.from("material_intake").update({ photo_url: path }).eq("id", intake.id);
+      if (photos.length > 0) {
+        const paths = await Promise.all(
+          photos.map(async (photo) => {
+            const path = `intake/${intake.id}/${crypto.randomUUID()}.jpg`;
+            await uploadMedia(supabase, path, photo, photo.type);
+            return path;
+          }),
+        );
+        await supabase.from("material_intake").update({ photo_urls: paths }).eq("id", intake.id);
       }
 
       router.push("/intake");
@@ -116,20 +120,12 @@ export function IntakeForm({ materials }: { materials: MaterialOption[] }) {
         />
       </label>
 
-      <label className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-neutral-600">Weighbridge slip photo (optional)</span>
-        <label className="flex h-14 w-fit cursor-pointer items-center gap-2 rounded-2xl bg-neutral-100 px-4 text-sm font-medium text-neutral-700">
-          <Camera className="h-5 w-5" />
-          {photoFile ? photoFile.name : "Add photo"}
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
-          />
-        </label>
-      </label>
+      <CameraCapture
+        label="Weighbridge slip photo (optional, up to 3)"
+        photos={photos}
+        onChange={setPhotos}
+        max={3}
+      />
 
       {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 

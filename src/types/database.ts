@@ -87,7 +87,7 @@ export interface Database {
           id: string;
           created_by: string;
           title: string | null;
-          photo_url: string | null;
+          photo_urls: string[];
           due_date: string | null;
           is_archived: boolean;
           created_at: string;
@@ -96,7 +96,7 @@ export interface Database {
           id?: string;
           created_by: string;
           title?: string | null;
-          photo_url?: string | null;
+          photo_urls?: string[];
           due_date?: string | null;
           is_archived?: boolean;
         };
@@ -224,7 +224,7 @@ export interface Database {
           unit: string;
           source_vendor: string | null;
           entered_by: string;
-          photo_url: string | null;
+          photo_urls: string[];
           received_at: string;
           created_at: string;
         };
@@ -235,7 +235,7 @@ export interface Database {
           unit: string;
           source_vendor?: string | null;
           entered_by: string;
-          photo_url?: string | null;
+          photo_urls?: string[];
           received_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["material_intake"]["Insert"]>;

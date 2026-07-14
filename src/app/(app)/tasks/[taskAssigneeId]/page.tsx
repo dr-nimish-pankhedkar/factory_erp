@@ -2,7 +2,7 @@ import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/current-profile";
-import { signedMediaUrl } from "@/lib/storage";
+import { signedMediaUrl, signedMediaUrls } from "@/lib/storage";
 import { TaskThread, type ThreadEvent } from "@/components/tasks/TaskThread";
 
 export default async function TaskDetailPage({
@@ -25,7 +25,7 @@ export default async function TaskDetailPage({
 
   const { data: task } = await supabase
     .from("tasks")
-    .select("id, title, photo_url, due_date")
+    .select("id, title, photo_urls, due_date")
     .eq("id", assignment.task_id)
     .single();
 
@@ -57,19 +57,28 @@ export default async function TaskDetailPage({
     }),
   );
 
-  const photoUrl = task?.photo_url ? await signedMediaUrl(supabase, task.photo_url) : null;
+  const photoUrlMap =
+    task?.photo_urls && task.photo_urls.length > 0
+      ? await signedMediaUrls(supabase, task.photo_urls)
+      : new Map<string, string>();
+  const photoUrls = (task?.photo_urls ?? []).map((p) => photoUrlMap.get(p)).filter((u): u is string => !!u);
   const canUpdateStatus = assignment.staff_id === profile.id;
 
   return (
     <div className="flex flex-col gap-4">
-      {photoUrl && (
-        <Image
-          src={photoUrl}
-          alt="Task reference"
-          width={600}
-          height={400}
-          className="w-full rounded-2xl object-cover"
-        />
+      {photoUrls.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto">
+          {photoUrls.map((url) => (
+            <Image
+              key={url}
+              src={url}
+              alt="Task reference"
+              width={200}
+              height={200}
+              className="h-40 w-40 shrink-0 rounded-2xl object-cover"
+            />
+          ))}
+        </div>
       )}
       {task?.due_date && <p className="text-sm text-neutral-500">Due {task.due_date}</p>}
       <TaskThread
